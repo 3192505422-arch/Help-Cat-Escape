@@ -1,0 +1,64 @@
+using UnityEngine;
+
+public class MusicManager : MonoBehaviour
+{
+    public static MusicManager instance;
+
+    private AudioSource audioSource;
+
+    [SerializeField] private AudioClip bgmClip;  // 在 Inspector 中拖入 BGM 音频文件
+    [Range(0f, 1f)] public float volume = 0.5f;  // 音量
+
+    void Awake()
+    {
+        // 单例模式：确保只有一个 MusicManager 实例
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);   // 切换场景时不销毁
+        }
+        else
+        {
+            Destroy(gameObject);              // 如果已存在，销毁新生成的
+            return;
+        }
+
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        // 配置 AudioSource
+        audioSource.clip = bgmClip;
+        audioSource.loop = true;          // 循环播放
+        audioSource.volume = volume;
+        audioSource.playOnAwake = false;
+    }
+
+    void Start()
+    {
+        // 开始播放音乐（如果尚未播放）
+        if (!audioSource.isPlaying && bgmClip != null)
+        {
+            audioSource.Play();
+        }
+    }
+
+    // 可选：提供外部控制方法（暂停、继续、设置音量等）
+    public void PauseMusic()
+    {
+        if (audioSource.isPlaying) audioSource.Pause();
+    }
+
+    public void ResumeMusic()
+    {
+        if (!audioSource.isPlaying) audioSource.Play();
+    }
+
+    public void SetVolume(float newVolume)
+    {
+        volume = Mathf.Clamp01(newVolume);
+        if (audioSource != null) audioSource.volume = volume;
+    }
+}
