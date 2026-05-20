@@ -1,0 +1,11 @@
+using UnityEngine;
+
+public class BrokenVase : MonoBehaviour
+{
+    public float destroyDelay = 2f;
+
+    void Start()
+    {
+        Destroy(gameObject, destroyDelay);
+    }
+}
