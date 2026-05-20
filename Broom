@@ -1,0 +1,48 @@
+using UnityEngine;
+using System.Collections;
+
+public class Broom : MonoBehaviour
+{
+    public float rotationSpeed = 90f;   // 每秒旋转度数（90度/秒 = 1秒转完）
+    private float currentAngle = 0f;
+    private bool isRotating = true;
+    private bool isCompleted = false;
+
+    void Update()
+    {
+        if (!isRotating || isCompleted) return;
+
+        // 顺时针旋转
+        float delta = rotationSpeed * Time.deltaTime;
+        currentAngle += delta;
+        transform.rotation = Quaternion.Euler(0, 0, -currentAngle); // 顺时针为负值
+
+        // 检查是否达到或超过90度
+        if (currentAngle >= 90f)
+        {
+            currentAngle = 90f;
+            transform.rotation = Quaternion.Euler(0, 0, -90f);
+            isRotating = false;
+            isCompleted = true;
+            OnRotationComplete();
+        }
+    }
+
+    void OnRotationComplete()
+    {
+        // 通知 GameManager 扫帚旋转成功，游戏失败（UI2）
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.BroomGameOver();  // 新的失败方法
+        }
+    }
+
+    void OnMouseDown()
+    {
+        // 在旋转完成前点击扫帚，销毁它，阻止旋转完成
+        if (!isCompleted)
+        {
+            Destroy(gameObject);
+        }
+    }
+}
