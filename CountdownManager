@@ -1,0 +1,52 @@
+using UnityEngine;
+using UnityEngine.UI;
+using System.Collections;
+
+public class CountdownManager : MonoBehaviour
+{
+    public float countdownTime = 30f;          // 倒计时总时长（秒）
+    public Text timerText;                     // 显示倒计时的Text组件
+    public GameObject winPanel;                // 倒计时结束后显示的UI面板
+
+    private float currentTime;
+
+    void Start()
+    {
+        currentTime = countdownTime;
+        UpdateTimerDisplay();
+        StartCoroutine(CountdownCoroutine());
+    }
+
+    IEnumerator CountdownCoroutine()
+    {
+        while (currentTime > 0)
+        {
+            yield return new WaitForSeconds(1f);
+            currentTime--;
+            UpdateTimerDisplay();
+        }
+        // 倒计时结束
+        OnCountdownEnd();
+    }
+
+    void UpdateTimerDisplay()
+    {
+        if (timerText != null)
+            timerText.text = Mathf.Ceil(currentTime).ToString(); // 显示整数秒
+    }
+
+    void OnCountdownEnd()
+    {
+        // 显示胜利UI
+        if (winPanel != null)
+            winPanel.SetActive(true);
+        // 隐藏倒计时文字
+        if (timerText != null)
+            timerText.gameObject.SetActive(false);
+
+        // ===== 新增：暂停游戏 =====
+        Time.timeScale = 0f;
+        // 可选：同时停止音频播放（如果需要）
+        // AudioListener.pause = true;
+    }
+}
