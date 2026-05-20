@@ -1,0 +1,32 @@
+using UnityEngine;
+
+public class Vase : MonoBehaviour
+{
+    public GameObject brokenVasePrefab;   // 破碎效果预制体
+
+    private void OnMouseDown()
+    {
+        // 只有游戏未结束时，点击才消除花瓶
+        if (GameManager.instance != null && !GameManager.instance.isGameOver)
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            if (GameManager.instance != null && !GameManager.instance.isGameOver)
+            {
+                GameManager.instance.GameOver();   // 触发游戏结束
+            }
+            // 生成破碎特效
+            if (brokenVasePrefab != null)
+            {
+                Instantiate(brokenVasePrefab, transform.position, Quaternion.identity);
+            }
+            Destroy(gameObject);                  // 移除原花瓶
+        }
+    }
+}
