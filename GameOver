@@ -1,0 +1,84 @@
+using UnityEngine;
+using System.Collections;
+
+public class GameManager : MonoBehaviour
+{
+    public static GameManager instance;
+
+    // 修改点：改为数组，存放三种（或更多）花瓶预制体
+    public GameObject[] vasePrefabs;          // 多个花瓶预制体
+    public GameObject brokenVasePrefab;
+    public GameObject gameOverPanel;
+    public GameObject gameOverPanel2;
+
+    public float spawnInterval = 1.0f;
+    public float spawnXMin = -5f;
+    public float spawnXMax = 5f;
+    public float spawnY = 6f;
+
+    public bool isGameOver = false;
+
+    void Awake()
+    {
+        if (instance == null)
+            instance = this;
+        else
+            Destroy(gameObject);
+    }
+
+    void Start()
+    {
+        if (gameOverPanel != null)
+            gameOverPanel.SetActive(false);
+        StartCoroutine(SpawnVases());
+    }
+
+    IEnumerator SpawnVases()
+    {
+        while (!isGameOver)
+        {
+            // 随机选择一个花瓶预制体
+            int randomIndex = Random.Range(0, vasePrefabs.Length);
+            GameObject selectedVase = vasePrefabs[randomIndex];
+
+            float randomX = Random.Range(spawnXMin, spawnXMax);
+            Vector2 spawnPos = new Vector2(randomX, spawnY);
+            Instantiate(selectedVase, spawnPos, Quaternion.identity);
+
+            yield return new WaitForSeconds(spawnInterval);
+        }
+    }
+
+    public void GameOver()
+    {
+        if (isGameOver) return;
+        isGameOver = true;
+
+        if (gameOverPanel != null)
+            gameOverPanel.SetActive(true);
+
+        Time.timeScale = 0f;
+    }
+
+    public void BroomGameOver()
+    {
+        if (isGameOver) return;
+        isGameOver = true;
+
+        if (gameOverPanel2 != null) gameOverPanel2.SetActive(true);
+        if (gameOverPanel != null) gameOverPanel.SetActive(false);
+
+        // 可选：通知 BroomManager 停止生成
+        BroomManager broomMgr = FindObjectOfType<BroomManager>();
+        if (broomMgr != null) broomMgr.StopSpawning();
+
+        Time.timeScale = 0f;
+    }
+    public void RestartGame()
+    {
+        Time.timeScale = 1f;
+        UnityEngine.SceneManagement.SceneManager.LoadScene(
+            UnityEngine.SceneManagement.SceneManager.GetActiveScene().name
+        );
+    }
+}
