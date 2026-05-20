@@ -1,0 +1,69 @@
+using UnityEngine;
+
+public class CursorManager : MonoBehaviour
+{
+    public Texture2D cursorNormal;
+    public Texture2D cursorVase;
+    public Texture2D cursorBroom;
+
+    private bool isCursorTemporary = false;
+
+    void Start()
+    {
+        SetCursor(cursorNormal);
+    }
+
+    void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            RaycastHit2D hit = Physics2D.Raycast(mousePos, Vector2.zero);
+
+            if (hit.collider != null)
+            {
+                GameObject clickedObj = hit.collider.gameObject;
+                if (clickedObj.CompareTag("Vase") || clickedObj.GetComponent<Vase>() != null)
+                {
+                    ChangeCursorTemporary(cursorVase);
+                }
+                else if (clickedObj.CompareTag("Broom") || clickedObj.GetComponent<Broom>() != null)
+                {
+                    ChangeCursorTemporary(cursorBroom);
+                }
+            }
+        }
+    }
+
+    private void ChangeCursorTemporary(Texture2D newCursor)
+    {
+        // 如果已经有延迟恢复的计划，先取消，避免重复
+        CancelInvoke("RestoreCursor");
+
+        SetCursor(newCursor);
+        isCursorTemporary = true;
+
+        // 0.5秒后恢复
+        Invoke("RestoreCursor", 0.5f);
+    }
+
+    private void RestoreCursor()
+    {
+        SetCursor(cursorNormal);
+        isCursorTemporary = false;
+    }
+
+    private void SetCursor(Texture2D cursorTexture)
+    {
+        if (cursorTexture != null)
+        {
+            Vector2 hotspot = new Vector2(cursorTexture.width / 2f, cursorTexture.height / 2f);
+            Cursor.SetCursor(cursorTexture, hotspot, CursorMode.Auto);
+        }
+        else
+        {
+            // 如果传入空，恢复系统默认光标
+            Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+        }
+    }
+}
