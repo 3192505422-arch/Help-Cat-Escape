@@ -1,0 +1,50 @@
+using UnityEngine;
+using System.Collections;
+
+public class BroomManager : MonoBehaviour
+{
+    public GameObject broomPrefab;      // 扫帚预制体
+    public float spawnInterval = 5f;    // 生成间隔（秒）
+
+    public float spawnXMin = -4f;       // 生成 X 轴最小范围
+    public float spawnXMax = 4f;        // 生成 X 轴最大范围
+    public float spawnY = 3f;           // 固定 Y 轴高度（不掉落）
+
+    private bool isSpawning = true;
+
+    void Start()
+    {
+        StartCoroutine(SpawnBroomRoutine());
+    }
+
+    IEnumerator SpawnBroomRoutine()
+    {
+        while (isSpawning)
+        {
+            yield return new WaitForSeconds(spawnInterval);
+
+            // 如果游戏已经结束，停止生成
+            if (GameManager.instance != null && GameManager.instance.isGameOver)
+            {
+                isSpawning = false;
+                yield break;
+            }
+
+            // 避免场景中同时存在多个扫帚（可选）
+            GameObject existingBroom = GameObject.FindGameObjectWithTag("Broom");
+            if (existingBroom == null)
+            {
+                float randomX = Random.Range(spawnXMin, spawnXMax);
+                Vector2 spawnPos = new Vector2(randomX, spawnY);
+                GameObject broom = Instantiate(broomPrefab, spawnPos, Quaternion.identity);
+                broom.tag = "Broom";   // 确保扫帚有 "Broom" 标签，用于查找
+            }
+        }
+    }
+
+    // 可选：外部调用停止生成（比如游戏结束）
+    public void StopSpawning()
+    {
+        isSpawning = false;
+    }
+}
